@@ -93,7 +93,48 @@ public class config {
         } catch (SQLException e) {
             System.out.println("Error retrieving records: " + e.getMessage());
         }
-    } 
+    }
+        public void viewSingleRecord(String sqlQuery, String[] columnHeaders, String[] columnNames, Object... params) {
+    if (columnHeaders.length != columnNames.length) {
+        System.out.println("Error: Mismatch between column headers and column names.");
+        return;
+    }
+
+    try (Connection conn = this.connectDB();
+         PreparedStatement pstmt = conn.prepareStatement(sqlQuery)) {
+
+        // Set query parameters dynamically
+        for (int i = 0; i < params.length; i++) {
+            pstmt.setObject(i + 1, params[i]);
+        }
+
+        ResultSet rs = pstmt.executeQuery();
+
+        // Print headers
+        System.out.println("--------------------------------------------------------------------------------");
+        for (String header : columnHeaders) {
+            System.out.print(String.format("%-20s | ", header));
+        }
+        System.out.println("\n--------------------------------------------------------------------------------");
+
+        // Print single record (if it exists)
+        if (rs.next()) {
+            for (String colName : columnNames) {
+                String value = rs.getString(colName);
+                System.out.print(String.format("%-20s | ", value != null ? value : ""));
+            }
+            System.out.println();
+        } else {
+            System.out.println("No record found.");
+        }
+        System.out.println("--------------------------------------------------------------------------------");
+
+    } catch (SQLException e) {
+        System.out.println("Error retrieving record: " + e.getMessage());
+    }
+}
+
+    
    
 //-----------------------------------------------
     // UPDATE METHOD
@@ -201,4 +242,6 @@ public void deleteRecord(String sql, Object... values) {
         }
         return result;
     }
+
+    
     }
